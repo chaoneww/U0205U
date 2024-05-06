@@ -1,13 +1,11 @@
 package com.tibame.u0205u.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
-import lombok.Getter;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.sql.Date;
+import java.util.Objects;
 
 @Entity // 要加上@Entity才能成為JPA的一個Entity類別
 @Table(name = "EMP3") // 代表這個class是對應到資料庫的實體table，目前對應的table是EMP2
@@ -22,18 +20,16 @@ public class EmpVO implements java.io.Serializable {
     private Double sal;
     private Double comm;
     private byte[] upFiles;
+    private Integer deptno;
 
     public EmpVO() { // 必需有一個不傳參數建構子(JavaBean基本知識)
     }
 
     @Id // @Id代表這個屬性是這個Entity的唯一識別屬性，並且對映到Table的主鍵
     @Column(name = "EMPNO") // @Column指這個屬性是對應到資料庫Table的哪一個欄位   //【非必要，但當欄位名稱與屬性名稱不同時則一定要用】
-    @GeneratedValue(
-            strategy =
-                    GenerationType
-                            .IDENTITY) // @GeneratedValue的generator屬性指定要用哪個generator
-                                       // //【strategy的GenerationType, 有四種值: AUTO, IDENTITY,
-                                       // SEQUENCE, TABLE】
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // @GeneratedValue的generator屬性指定要用哪個generator
+    // 【strategy的GenerationType, 有四種值: AUTO, IDENTITY, SEQUENCE, TABLE】
     public Integer getEmpno() {
         return this.empno;
     }
@@ -47,7 +43,7 @@ public class EmpVO implements java.io.Serializable {
     // 的預設值相反】
     // 【如果修改為 @ManyToOne(fetch=FetchType.LAZY)  --> 則指 lazy="true" 之意】
     @ManyToOne
-    @JoinColumn(name = "DEPTNO") // 指定用來join table的column
+    @JoinColumn(name = "DEPTNO", insertable = false, updatable = false) // 指定用來join table的column
     public DeptVO getDeptVO() {
         return this.deptVO;
     }
@@ -119,7 +115,7 @@ public class EmpVO implements java.io.Serializable {
     }
 
     @Column(name = "UPFILES")
-    @JsonIgnore
+    //    @JsonIgnore
     //	@NotEmpty(message="員工照片: 請上傳照片") --> 由EmpController.java 第60行處理錯誤信息
     public byte[] getUpFiles() {
         return upFiles;
@@ -127,5 +123,42 @@ public class EmpVO implements java.io.Serializable {
 
     public void setUpFiles(byte[] upFiles) {
         this.upFiles = upFiles;
+    }
+
+    @Lob
+    @Column(name = "DEPTNO", columnDefinition = "LONGBLOB")
+    public Integer getDeptno() {
+        return deptno;
+    }
+
+    public void setDeptno(Integer deptno) {
+        this.deptno = deptno;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass =
+                o instanceof HibernateProxy
+                        ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
+                        : o.getClass();
+        Class<?> thisEffectiveClass =
+                this instanceof HibernateProxy
+                        ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
+                        : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        EmpVO empVO = (EmpVO) o;
+        return getEmpno() != null && Objects.equals(getEmpno(), empVO.getEmpno());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy
+                ? ((HibernateProxy) this)
+                        .getHibernateLazyInitializer()
+                        .getPersistentClass()
+                        .hashCode()
+                : getClass().hashCode();
     }
 }

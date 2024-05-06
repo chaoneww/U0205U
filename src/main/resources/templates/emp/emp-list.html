@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>所有員工資料 - listAllEmp.html</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.jqueryui.min.css"/>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.2.1/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/index.css}"/>
+    <link rel="stylesheet" th:href="@{/css/error.css}"/>
+    <!-- Additional CSS for DataTables -->
+    <style>
+        body {
+            margin: 1rem 10rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+    <div align="center">
+        <h2>所有員工資料</h2>
+        <h3><a class="navbar-brand" href="/emp/select_page"><img src="/images/back1.gif">回查詢頁<label></label></a></h3>
+    </div>
+</nav>
+
+<!-- Add this button above the table -->
+<button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#createModal" id="create">
+    新增員工
+</button>
+
+<!-- Create Modal for Add Employee -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">新增員工</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm" method="post" action="/api/emp" enctype="multipart/form-data">
+                    <!-- Add form fields here -->
+                    <div class="form-group">
+                        <label for="ename">員工姓名:</label>
+                        <input type="text" class="form-control" id="ename" name="ename" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="job">職位:</label>
+                        <input type="text" class="form-control" id="job" name="job" value="ANALYST" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hiredate">雇用日期:</label>
+                        <input type="date" class="form-control" id="hiredate" name="hiredate" value="2024-02-24"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sal">薪水:</label>
+                        <input type="text" class="form-control" id="sal" name="sal" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="comm">獎金:</label>
+                        <input type="text" class="form-control" id="comm" name="comm" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deptno">部門:</label>
+                        <select id="deptno" name="deptno" class="form-control" required>
+                            <option value="1">財務部</option>
+                            <option value="2">研發部</option>
+                            <option value="3">業務部</option>
+                            <option value="4">生管部</option>
+                        </select>
+                    </div>
+                    <!-- Add more form fields as needed -->
+                    <div class="form-group">
+                        <label for="upFiles">照片:</label>
+                        <input type="file" class="form-control-file" id="upFiles" name="upFiles">
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">Submit</button>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="createEmployee">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<br/>
+<br/>
+<table id="example" class="display" style="width: 100%">
+    <thead>
+    <tr style="background-color:#CCCCFF">
+        <th>計數</th>
+        <th>員工編號</th>
+        <th>員工姓名</th>
+        <th>職位</th>
+        <th>雇用日期</th>
+        <th>薪水</th>
+        <th>獎金</th>
+        <th>照片</th>
+        <th>部門</th>
+        <th>詳情</th>
+        <th>修改</th>
+        <th>刪除</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        $('#example').DataTable({
+            "lengthMenu": [5, 10, 20, 50, 100],
+            "searching": true,
+            "paging": true,
+            "ordering": true,
+            "processing": true,
+            // "serverSide": true, // Enable server-side processing
+            "language": {
+                "processing": "處理中...",
+                "loadingRecords": "載入中...",
+                "lengthMenu": "顯示 _MENU_ 筆結果",
+                "zeroRecords": "沒有符合的結果",
+                "info": "顯示第 _START_ 至 _END_ 筆結果，共<font color=red> _TOTAL_ </font>筆",
+                "infoEmpty": "顯示第 0 至 0 筆結果，共 0 筆",
+                "infoFiltered": "(從 _MAX_ 筆結果中過濾)",
+                "infoPostFix": "",
+                "search": "搜尋:",
+                "paginate": {
+                    "first": "第一頁",
+                    "previous": "上一頁",
+                    "next": "下一頁",
+                    "last": "最後一頁"
+                },
+                "aria": {
+                    "sortAscending": ": 升冪排列",
+                    "sortDescending": ": 降冪排列"
+                }
+            },
+            "ajax": {
+                "url": "http://localhost:8001/api/emp", // Specify your API endpoint
+                "type": "GET", // Use POST method to send data
+                "dataSrc": "data" // Data source in the response
+            },
+            "columns": [
+                {"data": null}, // Use 'null' as placeholder for the count column
+                {"data": "empno"},
+                {"data": "ename"},
+                {"data": "job"},
+                {"data": "hiredate"},
+                {"data": "sal"},
+                {"data": "comm"},
+                {
+                    "data": "upFiles",
+                    "render": function (data, type, full, meta) {
+                        str = '<img src="data:image/jpeg;base64,' + data + '" width="100px">';
+                        // console.log(str)
+                        // return '<img src=data:image/jpeg;base64,' + data + ' width="100px">';
+                        return str;
+                    }
+                },
+                { // Nested data
+                    "data": "deptVO",
+                    "render": function (data, type, full, meta) {
+                        return data.deptno + '-[' + data.dname + ']';
+                    }
+                },
+                {
+                    "data": "empno",
+                    "render": function (data, type, full, meta) {
+                        // return `<form method="get" action="/emp/${data}" style="margin-bottom: 0px;">
+                        //         <input type="submit" value="詳情">
+                        //         </form>`;
+                        return `<a href="/emp/detail/${data}">
+                                <input type="button" value="詳情">
+                                </a>`;
+                    }
+                },
+                {
+                    "data": "empno",
+                    "render": function (data, type, full, meta) {
+                        return `<form method="get" action="/emp/update" style="margin-bottom: 0px;">
+                                <input type="submit" value="修改">
+                                <input type="hidden" name="empno" value="${data}">
+                                </form>`;
+                        // return `<input type="button" class="testButton" value="修改">`;
+                    }
+                },
+                {
+                    "data": "empno",
+                    "render": function (data, type, full, meta) {
+                        return `<button class="deleteButton" empno="${data}">刪除</button>`
+                    }
+                }
+            ],
+            "fnDrawCallback": function (oSettings) {
+                // Update the count column with sequential numbers
+                var table = $('#example').DataTable();
+                table.column(0, {"search": "applied", "order": "applied"}).nodes().each(function (cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+            }
+        });
+        // Handle create employee button click
+        $('#create').on('click', function () {
+            // $("#createForm")[0].reset();
+
+            $('#createModal').modal('show');
+        });
+
+        // Handle create employee form submission
+        $('#createForm').on('submit', function (e) {
+            e.preventDefault();
+            // Get form data
+            let formData = new FormData($('#createForm')[0]);
+
+            // Send AJAX request to server
+            $.ajax({
+                url: 'http://localhost:8001/api/emp', // Replace with your API endpoint
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.code === "0") {
+                        alert('新增成功');
+                        $('#example').DataTable().ajax.reload();
+                        $('#createModal').modal('hide');
+                    } else {
+                        alert('新增失敗！' + res.message);
+                        console.log(res)
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error(error);
+                    alert('新增失敗');
+                }
+            });
+        });
+
+        document.addEventListener(('click'), function (e) {
+            if (e.target && e.target.className == 'deleteButton') {
+                if (confirm("確定要刪除嗎？")) {
+                    const empno = e.target.getAttribute('empno');
+
+                    $.ajax({
+                        url: `/api/emp/${empno}`,
+                        type: 'DELETE',
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            console.log(res)
+                            if (res.code === "0") {
+                                alert('刪除成功');
+                                $('#example').DataTable().ajax.reload();
+                            } else {
+                                alert('刪除失敗！' + res.message);
+                                console.log(res)
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(error);
+                            alert('刪除失敗');
+                        }
+                    });
+                }
+
+            }
+        })
+        // Delegate the click event handling to a parent element
+        // $(document).on("click", ".testButton", function (e) {
+        //     alert("test");
+        // });
+    });
+</script>
+
+</body>
+</html>

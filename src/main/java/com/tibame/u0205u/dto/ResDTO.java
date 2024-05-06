@@ -18,6 +18,11 @@ public class ResDTO<T> {
         this.setStatusCode(StatusCode.SUCCESS);
     }
 
+    public ResDTO(T data) {
+        this.setStatusCode(StatusCode.SUCCESS);
+        this.data = data;
+    }
+
     public ResDTO(StatusCode statusCode) {
         this.setStatusCode(statusCode);
     }

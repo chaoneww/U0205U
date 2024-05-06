@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>更新員工</title>
+    <title>員工詳情</title>
 
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
 
@@ -26,41 +26,39 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
 
-            <h1 class="text-primary mb-4">Update Emp</h1>
+            <h1 class="text-primary mb-4">員工詳情</h1>
 
             <form id="updateForm" method="post" action="/api/emp" enctype="multipart/form-data">
                 <input type="hidden" id="empno" name="empno">
 
                 <div class="form-group">
                     <label for="ename">員工姓名:</label>
-                    <input type="text" class="form-control" id="ename" name="ename" required>
+                    <input type="text" class="form-control" id="ename" name="ename" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="job">職位:</label>
-                    <input type="text" class="form-control" id="job" name="job" required>
+                    <input type="text" class="form-control" id="job" name="job" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="hiredate">雇用日期:</label>
-                    <input type="date" class="form-control" id="hiredate" name="hiredate" required>
+                    <input type="date" class="form-control" id="hiredate" name="hiredate" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="sal">薪水:</label>
-                    <input type="text" class="form-control" id="sal" name="sal" required>
+                    <input type="text" class="form-control" id="sal" name="sal" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="comm">獎金:</label>
-                    <input type="text" class="form-control" id="comm" name="comm" required>
+                    <input type="text" class="form-control" id="comm" name="comm" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="deptno">部門:</label>
-                    <select id="deptno" name="deptno" class="form-control" required>
-
-                    </select>
+                    <input type="text" class="form-control" id="deptno" name="deptno" readonly >
                     <div class="invalid-feedback"></div>
                 </div>
                 <!--
@@ -78,10 +76,9 @@
                             name="upFiles"
                             data-max-file-size="3MB"
                             data-max-files="5"
-                            required
+                            disabled
                     />
                 </div>
-                <button class="btn btn-primary" type="submit">Submit</button>
 
             </form>
 
@@ -114,24 +111,8 @@
     });
 
     $(document).ready(function () {
-        // ajax get all dept data then set to select options
-        $.ajax({
-            url: '/api/dept',
-            type: 'GET',
-            success: function (res) {
-                let data = res.data;
-                let deptno = $('#deptno');
-                deptno.empty();
-                data.forEach(function (dept) {
-                    deptno.append(`<option value="${dept.deptno}">${dept.dname}</option>`);
-                });
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
 
-        let empno = getUrlParameter('empno');
+        let empno = getUrlPath();
 
         $.ajax({
             url: `/api/emp/${empno}`,
@@ -144,7 +125,7 @@
                 $('#hiredate').val(data.hiredate);
                 $('#sal').val(data.sal);
                 $('#comm').val(data.comm);
-                $('#deptno').val(data.deptno);
+                $('#deptno').val(data.deptVO.dname);
 
                 // Convert base64 string to File object
                 const binaryData = atob(data.upFiles); // Decode base64 string
@@ -176,12 +157,26 @@
         return urlParams.get(name);
     }
 
+    function getUrlPath() {
+        // 獲取當前 URL
+        let url = window.location.href;
+
+        // 解析 URL，提取 empno
+        let empno = url.substring(url.lastIndexOf('/') + 1);
+        return empno;
+    }
+
     $('#updateForm').submit(function (e) {
         e.preventDefault();
 
         let form = $(this);
         console.log(form)
+        // form.addClass('was-validated');
 
+        // if (form[0].checkValidity() === false) {
+        //     form.addClass('was-validated');
+        //     return;
+        // }
         let formData = new FormData($('#updateForm')[0]);
 
         $.ajax({
@@ -206,6 +201,19 @@
                         field.addClass('is-invalid');
                         field.siblings('.invalid-feedback').text(errorMessage);
                     });
+                    // // Clear previous error messages
+                    // $('.error-message').remove();
+                    //
+                    // if (res.data && res.data.length > 0) {
+                    //     res.data.forEach(function (error) {
+                    //         let fieldName = error.key;
+                    //         let errorMessage = error.errorMessage;
+                    //         $(`#${fieldName}`).after(`<small id="error-message" class="form-text text-danger">${errorMessage}</small>`);
+                    //     });
+                    // } else {
+                    //     alert('更新失敗');
+                    //     console.log(res);
+                    // }
                 }
 
             },
@@ -215,6 +223,29 @@
         });
     });
 
+    // Load base64 image data from server when the page loads
+    // window.addEventListener('load', function () {
+    //     // Make an AJAX request to fetch base64 image data
+    //     let empno = getUrlParameter('empno');
+    //     fetch('/api/emp/' + empno )
+    //         .then(response => response.json()) // Assuming the response is a base64 string
+    //         // .then(base64ImageData => {
+    //         //     // Set the retrieved base64 image data to the FilePond instance's files source
+    //         //     pond.setOptions({
+    //         //         files: [
+    //         //             {
+    //         //                 source: base64ImageData
+    //         //             }
+    //         //         ]
+    //         //     });
+    //         // })
+    //         .then(json => {
+    //             console.log(json.data);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching image data:', error);
+    //         });
+    // });
 </script>
 </body>
 </html>

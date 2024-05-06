@@ -1,10 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>新增員工</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.2.1/css/bootstrap.min.css}"/>
+
+    <!--    Filepond CSS    -->
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+          rel="stylesheet"/>
+    <style>
+        .filepond--item {
+            /*width: 15%;*/
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8"> <!-- Adjusted column width to fit the form better -->
 
+            <h1 class="text-primary mb-4">Add Emp</h1>
+
+            <form id="updateForm" method="post" action="/api/emp" enctype="multipart/form-data">
+                <input type="hidden" id="empno" name="empno">
+
+                <div class="form-group row">
+                    <label for="ename" class="col-sm-2 col-form-label">員工姓名:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="ename" name="ename" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="job" class="col-sm-2 col-form-label">職位:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="job" name="job" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="hiredate" class="col-sm-2 col-form-label">雇用日期:</label>
+                    <div class="col-sm-10">
+                        <input type="date" class="form-control" id="hiredate" name="hiredate" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="sal" class="col-sm-2 col-form-label">薪水:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="sal" name="sal" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="comm" class="col-sm-2 col-form-label">獎金:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="comm" name="comm" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="deptno" class="col-sm-2 col-form-label">部門:</label>
+                    <div class="col-sm-10">
+                        <select id="deptno" name="deptno" class="form-control" required></select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="filepond" class="col-sm-2">照片:</label>
+                    <div class="col-sm-10">
+                        <input
+                                id="filepond"
+                                type="file"
+                                class="filepond"
+                                name="upFiles"
+                                data-max-file-size="3MB"
+                                data-max-files="5"
+                                required
+                        />
+                    </div>
+                </div>
+
+                <!-- <div class="form-group"> -->
+                <!--     <label for="filepond">照片:</label> -->
+                <!--     <input -->
+                <!--             id="filepond" -->
+                <!--             type="file" -->
+                <!--             class="filepond" -->
+                <!--             name="upFiles" -->
+                <!--             data-max-file-size="3MB" -->
+                <!--             data-max-files="5" -->
+                <!--             required -->
+                <!--     /> -->
+                <!-- </div> -->
+                <button class="btn btn-primary" type="submit">送出</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+<!--Filepond JS-->
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
+<script>
+    FilePond.registerPlugin(FilePondPluginImagePreview);
+
+    const inputElement = document.querySelector("#filepond");
+    const pond = FilePond.create(inputElement);
+    pond.setOptions({
+        required: true,
+        storeAsFile: true,
+        labelIdle: '<span class="filepond--label-action">選擇或拖放圖片到這裡</span></br> ',
+        itemInsertLocation: "after",
+        imagePreviewHeight: "150px",
+        imagePreviewTransparencyIndicator: "grid",
+    });
+
+    $(document).ready(function () {
+        // ajax get all dept data then set to select options
+        $.ajax({
+            url: '/api/dept',
+            type: 'GET',
+            success: function (res) {
+                let data = res.data;
+                let deptno = $('#deptno');
+                deptno.empty();
+                data.forEach(function (dept) {
+                    deptno.append(`<option value="${dept.deptno}">${dept.dname}</option>`);
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+    function getUrlParameter(name) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        return urlParams.get(name);
+    }
+
+    $('#updateForm').submit(function (e) {
+        e.preventDefault();
+
+        let form = $(this);
+        console.log(form)
+        // form.addClass('was-validated');
+
+        // if (form[0].checkValidity() === false) {
+        //     form.addClass('was-validated');
+        //     return;
+        // }
+        let formData = new FormData($('#updateForm')[0]);
+
+        $.ajax({
+            url: 'http://localhost:8001/api/emp',
+            type: 'PUT',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                // Clear previous validation feedback
+                $('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback').text('');
+                // form.removeClass('was-validated');
+                if (res.code === "0") {
+                    window.location.href = '/home';
+                } else if (res.code === "-1") {
+                    // Form submission failed due to validation errors
+                    res.data.forEach(function (error) {
+                        var fieldName = error.key; // Assuming your server response includes field names
+                        var errorMessage = error.errorMessage;
+                        var field = form.find('#' + fieldName);
+                        field.addClass('is-invalid');
+                        field.siblings('.invalid-feedback').text(errorMessage);
+                    });
+                    // // Clear previous error messages
+                    // $('.error-message').remove();
+                    //
+                    // if (res.data && res.data.length > 0) {
+                    //     res.data.forEach(function (error) {
+                    //         let fieldName = error.key;
+                    //         let errorMessage = error.errorMessage;
+                    //         $(`#${fieldName}`).after(`<small id="error-message" class="form-text text-danger">${errorMessage}</small>`);
+                    //     });
+                    // } else {
+                    //     alert('更新失敗');
+                    //     console.log(res);
+                    // }
+                }
+
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+    // Load base64 image data from server when the page loads
+    // window.addEventListener('load', function () {
+    //     // Make an AJAX request to fetch base64 image data
+    //     let empno = getUrlParameter('empno');
+    //     fetch('/api/emp/' + empno )
+    //         .then(response => response.json()) // Assuming the response is a base64 string
+    //         // .then(base64ImageData => {
+    //         //     // Set the retrieved base64 image data to the FilePond instance's files source
+    //         //     pond.setOptions({
+    //         //         files: [
+    //         //             {
+    //         //                 source: base64ImageData
+    //         //             }
+    //         //         ]
+    //         //     });
+    //         // })
+    //         .then(json => {
+    //             console.log(json.data);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching image data:', error);
+    //         });
+    // });
+</script>
 </body>
 </html>
