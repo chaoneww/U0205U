@@ -9,9 +9,9 @@ Clone 專案
 git clone https://github.com/chaoneww/U0205U.git
 ```
 
-資料庫：執行 `resources/db/data.sql`
+建置資料庫：執行 `resources/db/data.sql`
 
-寫入圖片到料庫：執行 `src/main/java/com/tibame/u0205u/photowrite/PhotoWrite.java`
+寫入圖片到資料庫：執行 `src/main/java/com/tibame/u0205u/photowrite/PhotoWrite.java`
 
 啟動專案：執行 `Application.java`
 
