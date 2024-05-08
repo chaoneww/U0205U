@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.tibame</groupId>
-    <artifactId>u0205u</artifactId>
+    <artifactId>U0205U</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>u0205u</name>
     <description>u0205u</description>
